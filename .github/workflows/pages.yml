@@ -1,4 +1,4 @@
-name: Deploy Keshore Studios to GitHub Pages
+name: Deploy Kishore Studios to GitHub Pages
 
 on:
   push:
