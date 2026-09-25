@@ -75,8 +75,6 @@ function showLogin() {
 }
 
 loginForm?.addEventListener('submit', async (event) => {
-  // Always prevent the browser's native form submission. This avoids a page
-  // reload (and the password field being cleared) if authentication is unavailable.
   event.preventDefault();
   event.stopPropagation();
 
@@ -93,19 +91,32 @@ loginForm?.addEventListener('submit', async (event) => {
   }
 
   const button = loginForm.querySelector('button[type="submit"]');
-  if (button) button.disabled = true;
-  message(loginMessage, 'Signing in…');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Signing in…';
+  }
+  message(loginMessage, 'Connecting to secure sign-in…');
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    // Do not let a stalled network request look like a successful click with no response.
+    const signInPromise = supabase.auth.signInWithPassword({ email, password });
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Sign-in request timed out. Please check your internet connection and try again.')), 15000)
+    );
+    const { data, error } = await Promise.race([signInPromise, timeoutPromise]);
     if (error) throw error;
-    message(loginMessage, 'Signed in.', 'success');
+    if (!data?.session) throw new Error('Sign-in completed but no session was returned. Please check the Supabase authentication settings.');
+    message(loginMessage, 'Signed in successfully.', 'success');
     showDashboard(data.session);
   } catch (error) {
     console.error('Kishore Studios sign-in error:', error);
-    message(loginMessage, error?.message || 'Sign-in failed. Please check your email and password.', 'error');
+    const text = error?.message || 'Sign-in failed. Please check your email and password.';
+    message(loginMessage, `Sign-in failed: ${text}`, 'error');
   } finally {
-    if (button) button.disabled = false;
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'Sign in';
+    }
   }
 });
 
@@ -220,12 +231,17 @@ if (supabase) {
   });
 }
 
-// Surface unexpected JavaScript errors in the login area instead of silently
-// falling back to the browser's native form submission.
 window.addEventListener('error', (event) => {
   console.error(event.error || event.message);
-  if (loginView && !dashboardView?.hidden === false) {
-    message(loginMessage, 'The admin page encountered a browser error. Please refresh and try again.', 'error');
+  if (loginView && !loginView.hidden) {
+    message(loginMessage, `Browser error: ${event.message || 'Unknown JavaScript error'}`, 'error');
+  }
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error(event.reason);
+  if (loginView && !loginView.hidden) {
+    message(loginMessage, `Login error: ${event.reason?.message || String(event.reason)}`, 'error');
   }
 });
 
