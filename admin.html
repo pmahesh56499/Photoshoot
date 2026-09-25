@@ -55,17 +55,17 @@
       </section>
     </section>
   </main>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="config.js?v=20260926-4"></script>
-  <script src="admin.js?v=20260926-4"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2'"></script>
+  <script src="config.js?v=20260926-5"></script>
+  <script src="admin.js?v=20260926-5"></script>
   <script>
-    // If the admin script itself is not loaded, make that visible instead of silently doing nothing.
     window.addEventListener('load', function () {
       setTimeout(function () {
         if (!window.__KISHORE_ADMIN_LOADED) {
           var message = document.getElementById('loginMessage');
           if (message) {
-            message.textContent = 'The sign-in page could not load its login script. Please refresh once and try again.';
+            message.textContent = 'The login script did not load. Please refresh once. If this message remains, send me this screenshot.';
             message.className = 'form-message error';
           }
         }
