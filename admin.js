@@ -1,3 +1,4 @@
+window.__KISHORE_ADMIN_LOADED = true;
 const cfg = window.KS_CONFIG || {};
 const supabaseReady = Boolean(cfg.supabaseUrl && cfg.supabaseAnonKey && !String(cfg.supabaseAnonKey).includes('PASTE_'));
 const cloudinaryReady = Boolean(cfg.cloudinaryCloudName && cfg.cloudinaryUploadPreset && !String(cfg.cloudinaryCloudName).includes('PASTE_'));
@@ -98,7 +99,6 @@ loginForm?.addEventListener('submit', async (event) => {
   message(loginMessage, 'Connecting to secure sign-in…');
 
   try {
-    // Do not let a stalled network request look like a successful click with no response.
     const signInPromise = supabase.auth.signInWithPassword({ email, password });
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Sign-in request timed out. Please check your internet connection and try again.')), 15000)
