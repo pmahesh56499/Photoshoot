@@ -17,7 +17,7 @@
       <p class="eyebrow dark">PRIVATE PHOTO MANAGER</p>
       <h1>Welcome back.</h1>
       <p class="admin-subtitle">Sign in to add photos and videos to the public gallery.</p>
-      <form id="loginForm" class="admin-form" onsubmit="return false;">
+      <form id="loginForm" class="admin-form">
         <label>Email<input id="email" type="email" value="kishorestudios25@gmail.com" autocomplete="username" required></label>
         <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
         <button class="btn btn-dark" type="submit">Sign in</button>
@@ -55,8 +55,22 @@
       </section>
     </section>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js?v=20260926-3"></script>
-  <script src="admin.js?v=20260926-3"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="config.js?v=20260926-4"></script>
+  <script src="admin.js?v=20260926-4"></script>
+  <script>
+    // If the admin script itself is not loaded, make that visible instead of silently doing nothing.
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (!window.__KISHORE_ADMIN_LOADED) {
+          var message = document.getElementById('loginMessage');
+          if (message) {
+            message.textContent = 'The sign-in page could not load its login script. Please refresh once and try again.';
+            message.className = 'form-message error';
+          }
+        }
+      }, 1000);
+    });
+  </script>
 </body>
 </html>
