@@ -32,15 +32,17 @@
         <div class="admin-actions"><span id="adminEmail"></span><button id="logoutBtn" class="btn btn-outline" type="button">Sign out</button></div>
       </header>
 
-      <div class="admin-heading"><div><p class="eyebrow dark">PRIVATE DASHBOARD</p><h1>Manage your gallery.</h1><p>Add new work and it will appear on the public website automatically.</p></div><a class="btn btn-dark" href="index.html#gallery">View public gallery</a></div>
+      <div class="admin-heading"><div><p class="eyebrow dark">PRIVATE DASHBOARD</p><h1>Welcome, Kishore.</h1><p>Add new work and it will appear on the public website automatically.</p></div><a class="btn btn-dark" href="index.html#gallery">View public gallery</a></div>
+
+      <section class="owner-panel card-panel">
+        <div class="owner-avatar">KS</div>
+        <div><p class="eyebrow dark">STUDIO OWNER</p><h2>Kishore</h2><p>Owner & photographer — Kishore Studios.</p></div>
+      </section>
 
       <section class="upload-panel card-panel">
         <div class="panel-title"><div><p class="eyebrow dark">ADD NEW WORK</p><h2>Upload photos & videos</h2></div><span class="status-dot" id="connectionStatus">Checking…</span></div>
         <form id="uploadForm" class="upload-form">
-          <div class="upload-row">
-            <label>Title<input id="title" type="text" placeholder="e.g. Rahul & Priya — Pre-Wedding" maxlength="120" required></label>
-            <label>Category<select id="category"><option>Pre-Wedding</option><option>Wedding</option><option>Events</option><option>Portraits</option></select></label>
-          </div>
+          <div class="upload-row"><label>Title<input id="title" type="text" placeholder="e.g. Kishore — Owner Portrait" maxlength="120" required></label><label>Category<select id="category"><option>Portraits</option><option>Pre-Wedding</option><option>Wedding</option><option>Events</option></select></label></div>
           <label class="drop-zone" id="dropZone"><input id="mediaFiles" type="file" accept="image/*,video/*" multiple required><span class="drop-icon">＋</span><strong>Choose photos or videos</strong><small>Multiple files allowed • Images and videos</small><span id="fileSummary" class="file-summary">No files selected</span></label>
           <button class="btn btn-dark" id="uploadBtn" type="submit">Upload to gallery</button>
           <div id="uploadProgress" class="progress-wrap" hidden><div class="progress-bar"><span id="progressBar"></span></div><p id="progressText">Uploading…</p></div>
@@ -49,27 +51,32 @@
         <div class="security-note"><strong>Private admin:</strong> the dashboard requires the Kishore Studios Supabase account. Visitors never need to sign in.</div>
       </section>
 
-      <section class="library-section">
-        <div class="panel-title"><div><p class="eyebrow dark">CURRENT GALLERY</p><h2>Published work</h2></div><span id="galleryCount"></span></div>
-        <div id="adminGallery" class="admin-gallery"><p class="empty-state">Loading gallery…</p></div>
-      </section>
+      <section class="library-section"><div class="panel-title"><div><p class="eyebrow dark">CURRENT GALLERY</p><h2>Published work</h2></div><span id="galleryCount"></span></div><div id="adminGallery" class="admin-gallery"><p class="empty-state">Loading gallery…</p></div></section>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2'"></script>
-  <script src="config.js?v=20260926-5"></script>
-  <script src="admin.js?v=20260926-5"></script>
+  <script src="config.js?v=20260926-6"></script>
+  <script src="admin.js?v=20260926-6"></script>
   <script>
     window.addEventListener('load', function () {
       setTimeout(function () {
-        if (!window.__KISHORE_ADMIN_LOADED) {
-          var message = document.getElementById('loginMessage');
-          if (message) {
-            message.textContent = 'The login script did not load. Please refresh once. If this message remains, send me this screenshot.';
-            message.className = 'form-message error';
+        if (!window.supabase || !window.KS_CONFIG) return;
+        try {
+          var client = window.supabase.createClient(window.KS_CONFIG.supabaseUrl, window.KS_CONFIG.supabaseAnonKey);
+          function sync(session) {
+            var login = document.getElementById('loginView'), dash = document.getElementById('dashboardView');
+            if (session) {
+              if (login) { login.hidden = true; login.style.display = 'none'; }
+              if (dash) { dash.hidden = false; dash.style.display = 'block'; }
+              var email = document.getElementById('adminEmail');
+              if (email && session.user) email.textContent = session.user.email || '';
+            }
           }
-        }
-      }, 1000);
+          client.auth.getSession().then(function (r) { if (r.data && r.data.session) sync(r.data.session); });
+          client.auth.onAuthStateChange(function (_event, session) { if (session) sync(session); });
+        } catch (e) {}
+      }, 250);
     });
   </script>
 </body>
