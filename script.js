@@ -22,6 +22,7 @@ const canLoadGallery = cfg?.supabaseAnonKey && !cfg.supabaseAnonKey.includes('PA
 if (canLoadGallery && window.supabase) {
   const client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
   loadPublicGallery(client);
+  loadOwnerProfile(client);
 }
 
 async function loadPublicGallery(client) {
@@ -40,6 +41,14 @@ async function loadPublicGallery(client) {
     return `<figure class="gallery-item${layout}">${media}<figcaption>${escapeHtml(item.title || item.category || 'Kishore Studios')}</figcaption></figure>`;
   }).join('');
   if (status) status.textContent = `${data.length} memories from Kishore Studios.`;
+}
+
+async function loadOwnerProfile(client) {
+  const avatar = document.getElementById('ownerAvatar');
+  if (!avatar) return;
+  const { data, error } = await client.from('gallery').select('secure_url,resource_type,title,category').eq('category', 'Portraits').order('created_at', { ascending: false }).limit(1);
+  if (error || !data?.length || data[0].resource_type === 'video') return;
+  avatar.innerHTML = `<img src="${data[0].secure_url}" alt="Kishore — owner of Kishore Studios" loading="lazy">`;
 }
 
 function escapeHtml(value) {
